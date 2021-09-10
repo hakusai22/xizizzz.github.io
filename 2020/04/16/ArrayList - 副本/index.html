@@ -1,0 +1,265 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CMS垃圾回收器 | xizizzz</title><meta name="keywords" content="JVM"><meta name="author" content="xizizzz"><meta name="copyright" content="xizizzz"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="一. CMS介绍 JDK9 中，CMS 被标记为「Deprecated」，开始逐渐的淡出人们的视野，在目前最新的 JDK14 中，CMS 则是完全被移除了，成为了第一款被彻底遗弃的垃圾回收器。 CMS(Concurrent Mark-Sweep)是以牺牲吞吐量为代价来获得最短回收停顿时间的垃圾回收器。 在启动JVM参数加上-XX:+UseConcMarkSweepGC ，这个参数表示对于老年代的回">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CMS垃圾回收器">
+<meta property="og:url" content="http://www.xizizzz.top/2020/04/16/ArrayList%20-%20%E5%89%AF%E6%9C%AC/index.html">
+<meta property="og:site_name" content="xizizzz">
+<meta property="og:description" content="一. CMS介绍 JDK9 中，CMS 被标记为「Deprecated」，开始逐渐的淡出人们的视野，在目前最新的 JDK14 中，CMS 则是完全被移除了，成为了第一款被彻底遗弃的垃圾回收器。 CMS(Concurrent Mark-Sweep)是以牺牲吞吐量为代价来获得最短回收停顿时间的垃圾回收器。 在启动JVM参数加上-XX:+UseConcMarkSweepGC ，这个参数表示对于老年代的回">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Y960303802/image/img2/1024128.png">
+<meta property="article:published_time" content="2020-04-16T06:43:44.000Z">
+<meta property="article:modified_time" content="2021-09-10T03:40:21.445Z">
+<meta property="article:author" content="xizizzz">
+<meta property="article:tag" content="JVM">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/Y960303802/image/img2/1024128.png"><link rel="shortcut icon" href="https://cdn.jsdelivr.net/gh/xizizzz/image/av.jpg"><link rel="canonical" href="http://www.xizizzz.top/2020/04/16/ArrayList%20-%20%E5%89%AF%E6%9C%AC/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '天',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#121212","position":"bottom-left"},
+  source: {
+    jQuery: 'https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js',
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+    },
+    fancybox: {
+      js: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isanchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'CMS垃圾回收器',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: true,
+  isToc: false,
+  postUpdate: '2021-09-10 11:40:21'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const fontSizeVal = saveToLocal.get('global-font-size')
+    if (fontSizeVal !== undefined) {
+      document.documentElement.style.setProperty('--global-font-size', fontSizeVal + 'px')
+    }
+    
+    const detectApple = () => {
+      if (GLOBAL_CONFIG_SITE.isHome && /iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 5.4.0"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://cdn.jsdelivr.net/gh/xizizzz/image/av.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">11</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">5</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">5</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标籤</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fa fa-heartbeat"></i><span> 清单</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/Gallery/"><i class="fa-fw fas fa-images"></i><span> 照片</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://cdn.jsdelivr.net/gh/Y960303802/image/img2/1024128.png')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">xizizzz</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标籤</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fa fa-heartbeat"></i><span> 清单</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/Gallery/"><i class="fa-fw fas fa-images"></i><span> 照片</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">CMS垃圾回收器</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2020-04-16T06:43:44.000Z" title="发表于 2020-04-16 14:43:44">2020-04-16</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2021-09-10T03:40:21.445Z" title="更新于 2021-09-10 11:40:21">2021-09-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/JVM/">JVM</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="CMS垃圾回收器"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="一-CMS介绍"><a href="#一-CMS介绍" class="headerlink" title="一. CMS介绍"></a>一. CMS介绍</h1><ol>
+<li>JDK9 中，CMS 被标记为「Deprecated」，开始逐渐的淡出人们的视野，在目前最新的 JDK14 中，CMS 则是完全被移除了，成为了第一款被彻底遗弃的垃圾回收器。</li>
+<li>CMS(Concurrent Mark-Sweep)是以牺牲吞吐量为代价来获得<strong>最短回收停顿时间</strong>的垃圾回收器。</li>
+<li>在启动JVM参数加上-XX:+UseConcMarkSweepGC ，这个参数表示对于<strong>老年代</strong>的回收采用CMS。</li>
+<li>CMS采用的基础算法是：标记—清除。</li>
+</ol>
+<h1 id="二-实现机制"><a href="#二-实现机制" class="headerlink" title="二. 实现机制"></a>二. 实现机制</h1><ul>
+<li>根据GC的触发机制分为：周期性Old GC（被动）和主动Old GC</li>
+</ul>
+<h1 id="三-周期性Old-GC-CMS执行过程"><a href="#三-周期性Old-GC-CMS执行过程" class="headerlink" title="三. 周期性Old GC_CMS执行过程"></a>三. 周期性Old GC_CMS执行过程</h1><ul>
+<li>周期性Old GC，执行的逻辑也叫Background Collect，对老年代进行回收，在GC日志中比较常见，由后台线程ConcurrentMarkSweepThread循环判断（默认2s）是否需要触发。</li>
+</ul>
+<blockquote>
+<p><font color='red' size=3> 触发的条件</p>
+</blockquote>
+<ol>
+<li>如果没有设置-XX:+UseCMSInitiatingOccupancyOnly，虚拟机会根据收集的数据决定是否触发。</li>
+<li>老年代使用率达到阈值 CMSInitiatingOccupancyFraction，默认92%。</li>
+<li>永久代的使用率达到阈值 CMSInitiatingPermOccupancyFraction，默认92%，前提是开启 CMSClassUnloadingEnabled。</li>
+<li>新生代的晋升担保失败。老年代是否有足够的空间来容纳全部的新生代对象或历史平均晋升到老年代的对象，如果不够的话，就提早进行一次老年代的回收，防止下次进行YGC(对新生代堆进行gc)的时候发生晋升失败。</li>
+</ol>
+<p><img src="https://img-blog.csdnimg.cn/64aa740652d54acd9af3b424eacc82e9.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBA5pCs56CW5pCs56CW5pCs56CW5pCs56CW,size_20,color_FFFFFF,t_70,g_se,x_16" alt="在这里插入图片描述"></p>
+<blockquote>
+<p><font color='red' size=3>CMS执行的六个过程</p>
+<p><img src="https://img-blog.csdnimg.cn/20210426171736480.png" alt="在这里插入图片描述"></p>
+</blockquote>
+<pre><code>  1.  初始标记(STW initial mark)
+   2.  并发标记(Concurrent marking)
+   3.  并发预清理(Concurrent precleaning)
+   4.  重新标记(STW remark)
+   5.  并发清理(Concurrent sweeping)
+   6.  并发重置(Concurrent reset)
+</code></pre>
+<h2 id="①-初始标记"><a href="#①-初始标记" class="headerlink" title="①.初始标记"></a><font color='red' size=4>①.初始标记</h2><ul>
+<li> 在这个阶段，需要虚拟机停顿正在执行的任务，官方的叫法STW(Stop The Word)。</li>
+<li> 该阶段进行可达性分析，标记GC ROOT能直接关联到的对象，只扫描到能够和”根对象”直接关联的对象，并作标记。</li>
+<li> 这个过程虽然暂停了整个JVM，但是很快就完成了。<h2 id="②-并发标记"><a href="#②-并发标记" class="headerlink" title="②.并发标记"></a><font color='red' size=4>②.并发标记</h2></li>
+<li>这个阶段紧随初始标记阶段，在初始标记的基础上继续向下追溯标记。</li>
+<li>并发标记阶段，应用程序的线程和并发标记的线程并发执行，所以用户不会感受到停顿。</li>
+<li>该阶段进行GC ROOT TRACING，在第一个阶段被暂停的线程重新开始运行。</li>
+<li>并发标记阶段是和用户线程并发执行的过程。<h2 id="③-并发预清理"><a href="#③-并发预清理" class="headerlink" title="③.并发预清理"></a><font color='red' size=4>③.并发预清理</h2></li>
+<li>在这个阶段，虚拟机查找在执行并发标记阶段新进入老年代的对象(可能会有一些对象从新生代晋升到老年代， 或者有一些对象被分配到老年代)。</li>
+<li>通过重新扫描，减少下一个阶段”重新标记”的工作，因此重标记的工作尽可能多的在并发阶段完成来减少STW的时间。</li>
+</ul>
+<h2 id="④-重新标记"><a href="#④-重新标记" class="headerlink" title="④.重新标记"></a><font color='red' size=4>④.重新标记</h2><ul>
+<li>这个阶段会暂停虚拟机，收集器线程扫描在CMS堆中剩余的对象。扫描从”跟对象”开始向下追溯，并处理对象关联。<h2 id="⑤-并发清理"><a href="#⑤-并发清理" class="headerlink" title="⑤.并发清理"></a><font color='red' size=4>⑤.并发清理</h2></li>
+<li>清理垃圾对象，这个阶段收集器线程和应用程序线程并发执行。</li>
+<li>用户线程被重新激活，同时清理那些无效的对象。<h2 id="⑥-并发重置"><a href="#⑥-并发重置" class="headerlink" title="⑥.并发重置"></a><font color='red' size=4>⑥.并发重置</h2></li>
+<li>这个阶段，重置CMS收集器的数据结构，CMS清除内部状态，等待下一次垃圾回收。</li>
+</ul>
+<h1 id="三-CMS缺点"><a href="#三-CMS缺点" class="headerlink" title="三. CMS缺点"></a>三. CMS缺点</h1><ol>
+<li><p>CMS不会整理、压缩堆空间。经过CMS收集的堆会产生空间碎片。 </p>
+</li>
+<li><p>CMS回收器减少了回收的停顿时间，但是降低了堆空间的利用率。</p>
+</li>
+<li><p>GC线程与用户线程抢占CPU。这可能会造成用户线程执行效率下降， 需要更多的CPU资源。</p>
+</li>
+</ol>
+<p><img src="https://img-blog.csdnimg.cn/88cbd60b4f4d4f2291024a1c8b6ec058.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBA5pCs56CW5pCs56CW5pCs56CW5pCs56CW,size_20,color_FFFFFF,t_70,g_se,x_16" alt="在这里插入图片描述"></p>
+<h1 id="四-使用的场景"><a href="#四-使用的场景" class="headerlink" title="四. 使用的场景"></a>四. 使用的场景</h1><ul>
+<li><strong>GC过程短暂停，适合对时延要求较高的服务，用户线程不允许长时间的停顿。</strong></li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">xizizzz</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://www.xizizzz.top/2020/04/16/ArrayList%20-%20%E5%89%AF%E6%9C%AC/">http://www.xizizzz.top/2020/04/16/ArrayList%20-%20%E5%89%AF%E6%9C%AC/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://www.xizizzz.top" target="_blank">xizizzz</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/JVM/">JVM</a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/Y960303802/image/img2/1024128.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2021/08/07/Synchronized/"><img class="prev-cover" src="https://cdn.jsdelivr.net/gh/Y960303802/image/img2/911274.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">Synchronized---JDK1.8源码分析</div></div></a></div><div class="next-post pull-right"><a href="/2020/04/16/AQS/"><img class="next-cover" src="https://cdn.jsdelivr.net/gh/Y960303802/image/img2/719179.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">AbstractQueuedSynchronizer---JDK1.8源码分析</div></div></a></div></nav><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://cdn.jsdelivr.net/gh/xizizzz/image/av.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">xizizzz</div><div class="author-info__description">y960303802@163.com  2022届秋招后端开发求内推</div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">11</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">标签</div><div class="length-num">5</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">分类</div><div class="length-num">5</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xizizzz"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/xizizzz" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:y960303802@163.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="sticky_layout"><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2021/09/08/MySQL-%E7%B4%A2%E5%BC%95%E7%9B%B8%E5%85%B3%E4%BC%98%E5%8C%96/" title="MySQL-索引相关优化"><img src="https://cdn.jsdelivr.net/gh/Y960303802/image/img2/885936.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="MySQL-索引相关优化"/></a><div class="content"><a class="title" href="/2021/09/08/MySQL-%E7%B4%A2%E5%BC%95%E7%9B%B8%E5%85%B3%E4%BC%98%E5%8C%96/" title="MySQL-索引相关优化">MySQL-索引相关优化</a><time datetime="2021-09-08T07:43:44.000Z" title="发表于 2021-09-08 15:43:44">2021-09-08</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/09/01/Redis%E6%8C%81%E4%B9%85%E5%8C%96-AOF%E6%8C%81%E4%B9%85%E5%8C%96/" title="Redis持久化-AOF持久化"><img src="https://cdn.jsdelivr.net/gh/Y960303802/image/img2/227944.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis持久化-AOF持久化"/></a><div class="content"><a class="title" href="/2021/09/01/Redis%E6%8C%81%E4%B9%85%E5%8C%96-AOF%E6%8C%81%E4%B9%85%E5%8C%96/" title="Redis持久化-AOF持久化">Redis持久化-AOF持久化</a><time datetime="2021-09-01T04:43:44.000Z" title="发表于 2021-09-01 12:43:44">2021-09-01</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/09/01/Redis%E6%8C%81%E4%B9%85%E5%8C%96-RDB%20%E6%8C%81%E4%B9%85%E5%8C%96/" title="Redis持久化-RDB 持久化"><img src="https://cdn.jsdelivr.net/gh/Y960303802/image/img2/772493.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis持久化-RDB 持久化"/></a><div class="content"><a class="title" href="/2021/09/01/Redis%E6%8C%81%E4%B9%85%E5%8C%96-RDB%20%E6%8C%81%E4%B9%85%E5%8C%96/" title="Redis持久化-RDB 持久化">Redis持久化-RDB 持久化</a><time datetime="2021-09-01T04:43:44.000Z" title="发表于 2021-09-01 12:43:44">2021-09-01</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/08/29/G1%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8/" title="G1垃圾回收器"><img src="https://cdn.jsdelivr.net/gh/Y960303802/image/img2/891487.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="G1垃圾回收器"/></a><div class="content"><a class="title" href="/2021/08/29/G1%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8/" title="G1垃圾回收器">G1垃圾回收器</a><time datetime="2021-08-29T04:43:44.000Z" title="发表于 2021-08-29 12:43:44">2021-08-29</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/08/16/MySQL-Explain%E5%88%86%E6%9E%90%E6%89%A7%E8%A1%8C%E8%AE%A1%E5%88%92/" title="MySQL-Explain分析执行计划"><img src="https://cdn.jsdelivr.net/gh/Y960303802/image/img2/889639.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="MySQL-Explain分析执行计划"/></a><div class="content"><a class="title" href="/2021/08/16/MySQL-Explain%E5%88%86%E6%9E%90%E6%89%A7%E8%A1%8C%E8%AE%A1%E5%88%92/" title="MySQL-Explain分析执行计划">MySQL-Explain分析执行计划</a><time datetime="2021-08-16T02:43:44.000Z" title="发表于 2021-08-16 10:43:44">2021-08-16</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('https://cdn.jsdelivr.net/gh/Y960303802/image/img2/1024128.png')"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2021 By xizizzz</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">Hi, welcome to my <a href="https://www.xizizzz.top">blog</a>!</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="font-plus" type="button" title="放大字体"><i class="fas fa-plus"></i></button><button id="font-minus" type="button" title="缩小字体"><i class="fas fa-minus"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><script>var preloader = {
+  endLoading: () => {
+    document.body.style.overflow = 'auto';
+    document.getElementById('loading-box').classList.add("loaded")
+  },
+  initLoading: () => {
+    document.body.style.overflow = '';
+    document.getElementById('loading-box').classList.remove("loaded")
+
+  }
+}
+window.addEventListener('load',preloader.endLoading())</script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: 'AUkuL0yLmqGEmdXq6iMz6LjN-gzGzoHsz',
+      appKey: '7A6RFzlX5mBGy9Gtj6WcUorg',
+      placeholder: '记得留下你的暱称和邮箱....可以快速收到回復',
+      avatar: 'monsterid',
+      meta: 'nick,mail,link'.split(','),
+      pageSize: '10',
+      lang: 'zh-CN',
+      recordIP: false,
+      serverURLs: '',
+      emojiCDN: '',
+      emojiMaps: "",
+      enableQQ: true,
+      path: window.location.pathname,
+      requiredFields: ["nick,mail"],
+      visitor: true
+    }, null))
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js').then(initValine)
+}
+
+if ('Valine' === 'Valine' || !false) {
+  if (false) btf.loadComment(document.getElementById('vcomment'),loadValine)
+  else setTimeout(loadValine, 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script></div><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/fireworks.min.js"></script><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="false" data-click="false"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

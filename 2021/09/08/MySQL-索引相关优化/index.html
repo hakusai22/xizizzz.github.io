@@ -1,0 +1,347 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>MySQL-索引相关优化 | xizizzz</title><meta name="keywords" content="MySQL"><meta name="author" content="xizizzz"><meta name="copyright" content="xizizzz"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="一. 验证索引提升查询效率  根据ID 和name 进行精确查询查询    二. 索引的使用_准备环境  创建联合索引   1create index idx_seller_name_sta_addr on tb_seller(name,status,address);    创建表和插入数据   123456789101112131415161718192021222324create tabl">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MySQL-索引相关优化">
+<meta property="og:url" content="http://www.xizizzz.top/2021/09/08/MySQL-%E7%B4%A2%E5%BC%95%E7%9B%B8%E5%85%B3%E4%BC%98%E5%8C%96/index.html">
+<meta property="og:site_name" content="xizizzz">
+<meta property="og:description" content="一. 验证索引提升查询效率  根据ID 和name 进行精确查询查询    二. 索引的使用_准备环境  创建联合索引   1create index idx_seller_name_sta_addr on tb_seller(name,status,address);    创建表和插入数据   123456789101112131415161718192021222324create tabl">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Y960303802/image/img2/885936.png">
+<meta property="article:published_time" content="2021-09-08T07:43:44.000Z">
+<meta property="article:modified_time" content="2021-09-10T03:20:29.097Z">
+<meta property="article:author" content="xizizzz">
+<meta property="article:tag" content="MySQL">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/Y960303802/image/img2/885936.png"><link rel="shortcut icon" href="https://cdn.jsdelivr.net/gh/xizizzz/image/av.jpg"><link rel="canonical" href="http://www.xizizzz.top/2021/09/08/MySQL-%E7%B4%A2%E5%BC%95%E7%9B%B8%E5%85%B3%E4%BC%98%E5%8C%96/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '天',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#121212","position":"bottom-left"},
+  source: {
+    jQuery: 'https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js',
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+    },
+    fancybox: {
+      js: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isanchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'MySQL-索引相关优化',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: true,
+  isToc: false,
+  postUpdate: '2021-09-10 11:20:29'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const fontSizeVal = saveToLocal.get('global-font-size')
+    if (fontSizeVal !== undefined) {
+      document.documentElement.style.setProperty('--global-font-size', fontSizeVal + 'px')
+    }
+    
+    const detectApple = () => {
+      if (GLOBAL_CONFIG_SITE.isHome && /iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 5.4.0"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://cdn.jsdelivr.net/gh/xizizzz/image/av.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">11</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">5</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">5</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标籤</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fa fa-heartbeat"></i><span> 清单</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/Gallery/"><i class="fa-fw fas fa-images"></i><span> 照片</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://cdn.jsdelivr.net/gh/Y960303802/image/img2/885936.png')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">xizizzz</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标籤</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fa fa-heartbeat"></i><span> 清单</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/Gallery/"><i class="fa-fw fas fa-images"></i><span> 照片</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">MySQL-索引相关优化</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2021-09-08T07:43:44.000Z" title="发表于 2021-09-08 15:43:44">2021-09-08</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2021-09-10T03:20:29.097Z" title="更新于 2021-09-10 11:20:29">2021-09-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/MySQL/">MySQL</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="MySQL-索引相关优化"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="一-验证索引提升查询效率"><a href="#一-验证索引提升查询效率" class="headerlink" title="一. 验证索引提升查询效率"></a>一. 验证索引提升查询效率</h1><blockquote>
+<p><font color='red' size=4> 根据ID 和name 进行精确查询查询 </p>
+</blockquote>
+<p><img src="https://img-blog.csdnimg.cn/20210716214616446.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTQ4MDc4NQ==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<h1 id="二-索引的使用-准备环境"><a href="#二-索引的使用-准备环境" class="headerlink" title="二. 索引的使用_准备环境"></a>二. 索引的使用_准备环境</h1><blockquote>
+<p><font color='red' size=4> 创建联合索引</p>
+</blockquote>
+<p><img src="https://img-blog.csdnimg.cn/20210716214958795.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTQ4MDc4NQ==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">create</span> index idx_seller_name_sta_addr <span class="keyword">on</span> tb_seller(name,status,address);</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><font color='red' size=4> 创建表和插入数据</p>
+</blockquote>
+<p><img src="https://img-blog.csdnimg.cn/20210716215147184.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTQ4MDc4NQ==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">create</span> <span class="keyword">table</span> `tb_seller` (</span><br><span class="line">	`sellerid` <span class="type">varchar</span> (<span class="number">100</span>),</span><br><span class="line">	`name` <span class="type">varchar</span> (<span class="number">100</span>),</span><br><span class="line">	`nickname` <span class="type">varchar</span> (<span class="number">50</span>),</span><br><span class="line">	`password` <span class="type">varchar</span> (<span class="number">60</span>),</span><br><span class="line">	`status` <span class="type">varchar</span> (<span class="number">1</span>),</span><br><span class="line">	`address` <span class="type">varchar</span> (<span class="number">100</span>),</span><br><span class="line">	`createtime` datetime,</span><br><span class="line">    <span class="keyword">primary</span> key(`sellerid`)</span><br><span class="line">)engine<span class="operator">=</span>innodb <span class="keyword">default</span> charset<span class="operator">=</span>utf8mb4; </span><br><span class="line"></span><br><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> `tb_seller` (`sellerid`, `name`, `nickname`, `password`, `status`, `address`, `createtime`) <span class="keyword">values</span>(<span class="string">&#x27;alibaba&#x27;</span>,<span class="string">&#x27;阿里巴巴&#x27;</span>,<span class="string">&#x27;阿里小店&#x27;</span>,<span class="string">&#x27;e10adc3949ba59abbe56e057f20f883e&#x27;</span>,<span class="string">&#x27;1&#x27;</span>,<span class="string">&#x27;北京市&#x27;</span>,<span class="string">&#x27;2088-01-01 12:00:00&#x27;</span>);</span><br><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> `tb_seller` (`sellerid`, `name`, `nickname`, `password`, `status`, `address`, `createtime`) <span class="keyword">values</span>(<span class="string">&#x27;baidu&#x27;</span>,<span class="string">&#x27;百度科技有限公司&#x27;</span>,<span class="string">&#x27;百度小店&#x27;</span>,<span class="string">&#x27;e10adc3949ba59abbe56e057f20f883e&#x27;</span>,<span class="string">&#x27;1&#x27;</span>,<span class="string">&#x27;北京市&#x27;</span>,<span class="string">&#x27;2088-01-01 12:00:00&#x27;</span>);</span><br><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> `tb_seller` (`sellerid`, `name`, `nickname`, `password`, `status`, `address`, `createtime`) <span class="keyword">values</span>(<span class="string">&#x27;huawei&#x27;</span>,<span class="string">&#x27;华为科技有限公司&#x27;</span>,<span class="string">&#x27;华为小店&#x27;</span>,<span class="string">&#x27;e10adc3949ba59abbe56e057f20f883e&#x27;</span>,<span class="string">&#x27;0&#x27;</span>,<span class="string">&#x27;北京市&#x27;</span>,<span class="string">&#x27;2088-01-01 12:00:00&#x27;</span>);</span><br><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> `tb_seller` (`sellerid`, `name`, `nickname`, `password`, `status`, `address`, `createtime`) <span class="keyword">values</span>(<span class="string">&#x27;itcast&#x27;</span>,<span class="string">&#x27;传智播客教育科技有限公司&#x27;</span>,<span class="string">&#x27;传智播客&#x27;</span>,<span class="string">&#x27;e10adc3949ba59abbe56e057f20f883e&#x27;</span>,<span class="string">&#x27;1&#x27;</span>,<span class="string">&#x27;北京市&#x27;</span>,<span class="string">&#x27;2088-01-01 12:00:00&#x27;</span>);</span><br><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> `tb_seller` (`sellerid`, `name`, `nickname`, `password`, `status`, `address`, `createtime`) <span class="keyword">values</span>(<span class="string">&#x27;itheima&#x27;</span>,<span class="string">&#x27;黑马程序员&#x27;</span>,<span class="string">&#x27;黑马程序员&#x27;</span>,<span class="string">&#x27;e10adc3949ba59abbe56e057f20f883e&#x27;</span>,<span class="string">&#x27;0&#x27;</span>,<span class="string">&#x27;北京市&#x27;</span>,<span class="string">&#x27;2088-01-01 12:00:00&#x27;</span>);</span><br><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> `tb_seller` (`sellerid`, `name`, `nickname`, `password`, `status`, `address`, `createtime`) <span class="keyword">values</span>(<span class="string">&#x27;luoji&#x27;</span>,<span class="string">&#x27;罗技科技有限公司&#x27;</span>,<span class="string">&#x27;罗技小店&#x27;</span>,<span class="string">&#x27;e10adc3949ba59abbe56e057f20f883e&#x27;</span>,<span class="string">&#x27;1&#x27;</span>,<span class="string">&#x27;北京市&#x27;</span>,<span class="string">&#x27;2088-01-01 12:00:00&#x27;</span>);</span><br><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> `tb_seller` (`sellerid`, `name`, `nickname`, `password`, `status`, `address`, `createtime`) <span class="keyword">values</span>(<span class="string">&#x27;oppo&#x27;</span>,<span class="string">&#x27;OPPO科技有限公司&#x27;</span>,<span class="string">&#x27;OPPO官方旗舰店&#x27;</span>,<span class="string">&#x27;e10adc3949ba59abbe56e057f20f883e&#x27;</span>,<span class="string">&#x27;0&#x27;</span>,<span class="string">&#x27;北京市&#x27;</span>,<span class="string">&#x27;2088-01-01 12:00:00&#x27;</span>);</span><br><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> `tb_seller` (`sellerid`, `name`, `nickname`, `password`, `status`, `address`, `createtime`) <span class="keyword">values</span>(<span class="string">&#x27;ourpalm&#x27;</span>,<span class="string">&#x27;掌趣科技股份有限公司&#x27;</span>,<span class="string">&#x27;掌趣小店&#x27;</span>,<span class="string">&#x27;e10adc3949ba59abbe56e057f20f883e&#x27;</span>,<span class="string">&#x27;1&#x27;</span>,<span class="string">&#x27;北京市&#x27;</span>,<span class="string">&#x27;2088-01-01 12:00:00&#x27;</span>);</span><br><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> `tb_seller` (`sellerid`, `name`, `nickname`, `password`, `status`, `address`, `createtime`) <span class="keyword">values</span>(<span class="string">&#x27;qiandu&#x27;</span>,<span class="string">&#x27;千度科技&#x27;</span>,<span class="string">&#x27;千度小店&#x27;</span>,<span class="string">&#x27;e10adc3949ba59abbe56e057f20f883e&#x27;</span>,<span class="string">&#x27;2&#x27;</span>,<span class="string">&#x27;北京市&#x27;</span>,<span class="string">&#x27;2088-01-01 12:00:00&#x27;</span>);</span><br><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> `tb_seller` (`sellerid`, `name`, `nickname`, `password`, `status`, `address`, `createtime`) <span class="keyword">values</span>(<span class="string">&#x27;sina&#x27;</span>,<span class="string">&#x27;新浪科技有限公司&#x27;</span>,<span class="string">&#x27;新浪官方旗舰店&#x27;</span>,<span class="string">&#x27;e10adc3949ba59abbe56e057f20f883e&#x27;</span>,<span class="string">&#x27;1&#x27;</span>,<span class="string">&#x27;北京市&#x27;</span>,<span class="string">&#x27;2088-01-01 12:00:00&#x27;</span>);</span><br><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> `tb_seller` (`sellerid`, `name`, `nickname`, `password`, `status`, `address`, `createtime`) <span class="keyword">values</span>(<span class="string">&#x27;xiaomi&#x27;</span>,<span class="string">&#x27;小米科技&#x27;</span>,<span class="string">&#x27;小米官方旗舰店&#x27;</span>,<span class="string">&#x27;e10adc3949ba59abbe56e057f20f883e&#x27;</span>,<span class="string">&#x27;1&#x27;</span>,<span class="string">&#x27;西安市&#x27;</span>,<span class="string">&#x27;2088-01-01 12:00:00&#x27;</span>);</span><br><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> `tb_seller` (`sellerid`, `name`, `nickname`, `password`, `status`, `address`, `createtime`) <span class="keyword">values</span>(<span class="string">&#x27;yijia&#x27;</span>,<span class="string">&#x27;宜家家居&#x27;</span>,<span class="string">&#x27;宜家家居旗舰店&#x27;</span>,<span class="string">&#x27;e10adc3949ba59abbe56e057f20f883e&#x27;</span>,<span class="string">&#x27;1&#x27;</span>,<span class="string">&#x27;北京市&#x27;</span>,<span class="string">&#x27;2088-01-01 12:00:00&#x27;</span>);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+<h1 id="三-避免索引失效"><a href="#三-避免索引失效" class="headerlink" title="三. 避免索引失效"></a>三. 避免索引失效</h1><h2 id="①-全值匹配-，对索引中所有列都指定具体值"><a href="#①-全值匹配-，对索引中所有列都指定具体值" class="headerlink" title="①. 全值匹配 ，对索引中所有列都指定具体值"></a>①. 全值匹配 ，对索引中所有列都指定具体值</h2><ul>
+<li>该情况下，索引生效，执行效率高。</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">explain <span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> tb_seller <span class="keyword">where</span> name<span class="operator">=</span><span class="string">&#x27;小米科技&#x27;</span> <span class="keyword">and</span> status<span class="operator">=</span><span class="string">&#x27;1&#x27;</span> <span class="keyword">and</span> address<span class="operator">=</span><span class="string">&#x27;北京市&#x27;</span>\G;</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://img-blog.csdnimg.cn/20210716215026690.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTQ4MDc4NQ==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<h2 id="②-最左前缀法则-走索引"><a href="#②-最左前缀法则-走索引" class="headerlink" title="②. 最左前缀法则_走索引"></a>②. 最左前缀法则_走索引</h2><ul>
+<li>如果索引了多列，要遵守最左前缀法则。指的是查询从索引的最左前列开始，并且不跳过索引中的列。</li>
+</ul>
+<blockquote>
+<p><font color='red' size=4> 匹配最左前缀法则，走索引：</p>
+</blockquote>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">explain <span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> tb_seller <span class="keyword">where</span> name<span class="operator">=</span><span class="string">&#x27;小米科技&#x27;</span>;</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://img-blog.csdnimg.cn/20210716215323663.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTQ4MDc4NQ==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">explain <span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> tb_seller <span class="keyword">where</span> name<span class="operator">=</span><span class="string">&#x27;小米科技&#x27;</span> <span class="keyword">and</span> status<span class="operator">=</span><span class="string">&#x27;1&#x27;</span>;</span><br></pre></td></tr></table></figure>
+<p><img src="https://img-blog.csdnimg.cn/2021071621532888.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTQ4MDc4NQ==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">explain <span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> tb_seller <span class="keyword">where</span> name<span class="operator">=</span><span class="string">&#x27;小米科技&#x27;</span> <span class="keyword">and</span> address<span class="operator">=</span><span class="string">&#x27;北京市&#x27;</span> <span class="keyword">and</span> status<span class="operator">=</span><span class="string">&#x27;1&#x27;</span>;</span><br></pre></td></tr></table></figure>
+<p><img src="https://img-blog.csdnimg.cn/20210716215336240.png" alt="在这里插入图片描述"></p>
+<h2 id="③-违反最左前缀法则-，-索引失效"><a href="#③-违反最左前缀法则-，-索引失效" class="headerlink" title="③.  违反最左前缀法则 ， 索引失效"></a>③.  违反最左前缀法则 ， 索引失效</h2><blockquote>
+<p><font color='red' size=4> 违法最左前缀法则 ， 索引失效</p>
+</blockquote>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">explain <span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> tb_seller <span class="keyword">where</span> status<span class="operator">=</span><span class="string">&#x27;1&#x27;</span> <span class="keyword">and</span> address<span class="operator">=</span><span class="string">&#x27;北京市&#x27;</span>;</span><br></pre></td></tr></table></figure>
+<p><img src="https://img-blog.csdnimg.cn/20210716215330593.png" alt="在这里插入图片描述"></p>
+<p><img src="https://img-blog.csdnimg.cn/20210716215612168.png" alt="在这里插入图片描述"><br><img src="https://img-blog.csdnimg.cn/20210716215615712.png" alt="在这里插入图片描述"></p>
+<blockquote>
+<p><font color='red' size=4> 如果符合最左法则，但是出现跳跃某一列，只有最左列索引生效</p>
+</blockquote>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">explain <span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> tb_seller <span class="keyword">where</span> name<span class="operator">=</span><span class="string">&#x27;小米科技&#x27;</span><span class="keyword">and</span> address<span class="operator">=</span><span class="string">&#x27;北京市&#x27;</span>;</span><br></pre></td></tr></table></figure>
+<p><img src="https://img-blog.csdnimg.cn/20210716215339672.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTQ4MDc4NQ==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<h2 id="④-范围查询右边的列，不能使用索引"><a href="#④-范围查询右边的列，不能使用索引" class="headerlink" title="④. 范围查询右边的列，不能使用索引"></a>④. 范围查询右边的列，不能使用索引</h2><blockquote>
+<p><font color='red' size=4> 范围查询右边的列，不能使用索引 </p>
+</blockquote>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">explain <span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> tb_seller <span class="keyword">where</span> name<span class="operator">=</span><span class="string">&#x27;小米科技&#x27;</span> <span class="keyword">and</span> status<span class="operator">=</span><span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">explain <span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> tb_seller <span class="keyword">where</span> name<span class="operator">=</span><span class="string">&#x27;小米科技&#x27;</span> <span class="keyword">and</span> status<span class="operator">&gt;</span><span class="string">&#x27;1&#x27;</span> <span class="keyword">and</span> address<span class="operator">=</span><span class="string">&#x27;北京市&#x27;</span>;</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://img-blog.csdnimg.cn/20210716215619884.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTQ4MDc4NQ==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<h2 id="⑤-不要在索引列上进行运算操作，-索引将失效"><a href="#⑤-不要在索引列上进行运算操作，-索引将失效" class="headerlink" title="⑤. 不要在索引列上进行运算操作， 索引将失效"></a>⑤. 不要在索引列上进行运算操作， 索引将失效</h2><blockquote>
+<p><font color='red' size=4> 不要在索引列上进行运算操作， 索引将失效</p>
+</blockquote>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">explain <span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> tb_seller <span class="keyword">where</span> <span class="built_in">substring</span>(name,<span class="number">3</span>,<span class="number">2</span>)<span class="operator">=</span><span class="string">&#x27;科技&#x27;</span>;</span><br></pre></td></tr></table></figure>
+<p><img src="https://img-blog.csdnimg.cn/20210716220058143.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTQ4MDc4NQ==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<h2 id="⑥-字符串不加单引号，造成索引失效"><a href="#⑥-字符串不加单引号，造成索引失效" class="headerlink" title="⑥. 字符串不加单引号，造成索引失效"></a>⑥. 字符串不加单引号，造成索引失效</h2><blockquote>
+<p><font color='red' size=4>字符串不加单引号，造成索引失效</p>
+</blockquote>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">explain <span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> tb_seller <span class="keyword">where</span> name<span class="operator">=</span><span class="string">&#x27;小米科技&#x27;</span> <span class="keyword">and</span> status<span class="operator">=</span><span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+<p><img src="https://img-blog.csdnimg.cn/202107162201379.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTQ4MDc4NQ==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<h2 id="⑦-尽量使用覆盖索引，避免select"><a href="#⑦-尽量使用覆盖索引，避免select" class="headerlink" title="⑦.  尽量使用覆盖索引，避免select  *"></a>⑦.  尽量使用覆盖索引，避免select  *</h2><ul>
+<li>尽量使用覆盖索引（只访问索引的查询（索引列完全包含查询列）），减少select * 。</li>
+</ul>
+<p><img src="https://img-blog.csdnimg.cn/20210716220323922.png" alt="在这里插入图片描述"></p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">explain <span class="keyword">select</span> name,status,address <span class="keyword">from</span> tb_seller <span class="keyword">where</span> name<span class="operator">=</span><span class="string">&#x27;小米科技&#x27;</span>;</span><br></pre></td></tr></table></figure>
+<p><img src="https://img-blog.csdnimg.cn/20210716220329803.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTQ4MDc4NQ==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br><img src="https://img-blog.csdnimg.cn/20210716220343608.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTQ4MDc4NQ==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br><img src="https://img-blog.csdnimg.cn/20210716220353464.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTQ4MDc4NQ==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<h2 id="⑧-如果查询列，超出索引列，也会降低性能。"><a href="#⑧-如果查询列，超出索引列，也会降低性能。" class="headerlink" title="⑧.  如果查询列，超出索引列，也会降低性能。"></a>⑧.  如果查询列，超出索引列，也会降低性能。</h2><blockquote>
+<p><font color='red' size=4> 如果查询列，超出索引列，也会降低性能。</p>
+</blockquote>
+<p><img src="https://img-blog.csdnimg.cn/20210716220515112.png" alt="在这里插入图片描述"><br><img src="https://img-blog.csdnimg.cn/20210716220526315.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTQ4MDc4NQ==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">using</span> index ：使用覆盖索引的时候就会出现</span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">where</span>：在查找使用索引的情况下，需要回表去查询所需的数据</span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> index <span class="keyword">condition</span>：查找使用了索引，但是需要回表查询数据</span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> index ; <span class="keyword">using</span> <span class="keyword">where</span>：查找使用了索引，但是需要的数据都在索引列中能找到，所以不需要回表查询数据</span><br></pre></td></tr></table></figure>
+
+<h2 id="⑨-用or分割开的条件"><a href="#⑨-用or分割开的条件" class="headerlink" title="⑨.  用or分割开的条件"></a>⑨.  用or分割开的条件</h2><blockquote>
+<p><font color='red' size=4>用or分割开的条件</p>
+</blockquote>
+<ul>
+<li><p>如果or前的条件中的列有索引，而后面的列中没有索引，那么涉及的索引都不会被用到。</p>
+</li>
+<li><p>示例，name字段是索引列 ， 而nickname不是索引列，中间是or进行连接是不走索引的</p>
+</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">explain <span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> tb_seller <span class="keyword">where</span> name<span class="operator">=</span><span class="string">&#x27;小米科技&#x27;</span> <span class="keyword">or</span> nickname<span class="operator">=</span><span class="string">&#x27;小米官方旗舰店&#x27;</span>;</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://img-blog.csdnimg.cn/20210716220600689.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTQ4MDc4NQ==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<h2 id="⑩-以-开头的Like模糊查询，索引失效"><a href="#⑩-以-开头的Like模糊查询，索引失效" class="headerlink" title="⑩. 以%开头的Like模糊查询，索引失效"></a>⑩. 以%开头的Like模糊查询，索引失效</h2><blockquote>
+<p><font color='red' size=4> 以%开头的Like模糊查询，索引失效</p>
+</blockquote>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">explain <span class="keyword">select</span> name,status <span class="keyword">from</span> tb_seller <span class="keyword">where</span> name <span class="keyword">like</span> <span class="string">&#x27;%小米%&#x27;</span>;</span><br><span class="line"></span><br><span class="line">explain <span class="keyword">select</span> name,status <span class="keyword">from</span> tb_seller <span class="keyword">where</span> name <span class="keyword">like</span> <span class="string">&#x27;%小米&#x27;</span>;</span><br><span class="line"></span><br><span class="line">explain <span class="keyword">select</span> name,status <span class="keyword">from</span> tb_seller <span class="keyword">where</span> name <span class="keyword">like</span> <span class="string">&#x27;小米%&#x27;</span>;</span><br></pre></td></tr></table></figure>
+<p><img src="https://img-blog.csdnimg.cn/20210716220710567.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTQ4MDc4NQ==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br><img src="https://img-blog.csdnimg.cn/20210716220714826.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTQ4MDc4NQ==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br><img src="https://img-blog.csdnimg.cn/20210716220728100.png" alt="在这里插入图片描述"></p>
+<h2 id="十一-如果MySQL评估使用索引比全表更慢，则不使用索引"><a href="#十一-如果MySQL评估使用索引比全表更慢，则不使用索引" class="headerlink" title="十一. 如果MySQL评估使用索引比全表更慢，则不使用索引"></a>十一. 如果MySQL评估使用索引比全表更慢，则不使用索引</h2><blockquote>
+<p><font color='red' size=4> 如果MySQL评估使用索引比全表更慢，则不使用索引</p>
+</blockquote>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">show</span> index <span class="keyword">from</span> tb_seller;</span><br><span class="line"></span><br><span class="line"> <span class="keyword">create</span> index idx_seller_address <span class="keyword">on</span> tb_seller(address);</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://img-blog.csdnimg.cn/20210716220834579.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTQ4MDc4NQ==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<p><img src="https://img-blog.csdnimg.cn/202107162208110.png" alt="在这里插入图片描述"><br><img src="https://img-blog.csdnimg.cn/20210716220916178.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTQ4MDc4NQ==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br><img src="https://img-blog.csdnimg.cn/20210716220923329.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTQ4MDc4NQ==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<h2 id="十二-is-null，-is-not-null，-gt-有时索引失效。"><a href="#十二-is-null，-is-not-null，-gt-有时索引失效。" class="headerlink" title="十二.  is  null， is not null，&gt;有时索引失效。"></a>十二.  is  null， is not null，&gt;有时索引失效。</h2><blockquote>
+<p><font color='red' size=4> is  NULL ， is NOT NULL  &gt;有时索引失效。</p>
+</blockquote>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">explain <span class="keyword">select</span> <span class="operator">*</span>  <span class="keyword">from</span> tb_seller <span class="keyword">where</span> address <span class="keyword">is</span> <span class="keyword">not</span> <span class="keyword">null</span>;</span><br><span class="line"></span><br><span class="line">explain <span class="keyword">select</span> <span class="operator">*</span>  <span class="keyword">from</span> tb_seller <span class="keyword">where</span> address <span class="keyword">is</span> <span class="keyword">null</span>;</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p><img src="https://img-blog.csdnimg.cn/20210716220935222.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTQ4MDc4NQ==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<h2 id="十三-in-走索引，-not-in-索引失效"><a href="#十三-in-走索引，-not-in-索引失效" class="headerlink" title="十三.  in 走索引， not in 索引失效"></a>十三.  in 走索引， not in 索引失效</h2><blockquote>
+<p><font color='red' size=4>  in 走索引， not in 索引失效</p>
+</blockquote>
+<p><img src="https://img-blog.csdnimg.cn/20210716221053258.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTQ4MDc4NQ==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">explain <span class="keyword">select</span> <span class="operator">*</span>  <span class="keyword">from</span> tb_seller <span class="keyword">where</span> sellerid <span class="keyword">not</span> <span class="keyword">in</span> (<span class="string">&#x27;oppo&#x27;</span>,<span class="string">&#x27;xiaomi&#x27;</span>,<span class="string">&#x27;sina&#x27;</span>);</span><br><span class="line"></span><br><span class="line">explain <span class="keyword">select</span> <span class="operator">*</span>  <span class="keyword">from</span> tb_seller <span class="keyword">where</span> sellerid <span class="keyword">in</span> (<span class="string">&#x27;oppo&#x27;</span>,<span class="string">&#x27;xiaomi&#x27;</span>,<span class="string">&#x27;sina&#x27;</span>);</span><br></pre></td></tr></table></figure>
+
+<h2 id="十四-单列索引和复合索引"><a href="#十四-单列索引和复合索引" class="headerlink" title="十四. 单列索引和复合索引"></a>十四. 单列索引和复合索引</h2><ul>
+<li>尽量使用复合索引，而少使用单列索引 。</li>
+</ul>
+<blockquote>
+<p><font color='red' size=4> 创建复合索引进行测试</p>
+</blockquote>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">create</span> index idx_name_sta_address <span class="keyword">on</span> tb_seller(name, status, address);</span><br><span class="line"></span><br><span class="line">就相当于创建了三个索引 ： </span><br><span class="line">	name</span><br><span class="line">	name <span class="operator">+</span> status</span><br><span class="line">	name <span class="operator">+</span> status <span class="operator">+</span> address</span><br></pre></td></tr></table></figure>
+
+
+
+<p><img src="https://img-blog.csdnimg.cn/20210716222147511.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTQ4MDc4NQ==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">drop</span> index idx_seller_name_sta_addr  <span class="keyword">on</span> tb_seller;</span><br></pre></td></tr></table></figure>
+<p><img src="https://img-blog.csdnimg.cn/20210716222201401.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTQ4MDc4NQ==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<blockquote>
+<p><font color='red' size=4> 创建单列索引进行测试</p>
+</blockquote>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">create</span> index idx_seller_name <span class="keyword">on</span> tb_seller(name);</span><br><span class="line"><span class="keyword">create</span> index idx_seller_status <span class="keyword">on</span> tb_seller(status);</span><br><span class="line"><span class="keyword">create</span> index idx_seller_address <span class="keyword">on</span> tb_seller(address);</span><br></pre></td></tr></table></figure>
+
+
+
+
+<p><img src="https://img-blog.csdnimg.cn/20210716222239213.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTQ4MDc4NQ==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<blockquote>
+<p><font color='red' size=4>数据库会选择一个最优的索引（辨识度最高索引）来使用，并不会使用全部索引 。</p>
+</blockquote>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">explain <span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> tb_seller <span class="keyword">where</span> name<span class="operator">=</span><span class="string">&#x27;小米科技&#x27;</span> <span class="keyword">and</span> status<span class="operator">=</span><span class="string">&#x27;0&#x27;</span> <span class="keyword">and</span> address<span class="operator">=</span><span class="string">&#x27;西安市&#x27;</span>;</span><br></pre></td></tr></table></figure>
+<p><img src="https://img-blog.csdnimg.cn/20210716222354116.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTQ4MDc4NQ==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br><img src="https://img-blog.csdnimg.cn/20210716222411794.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTQ4MDc4NQ==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<blockquote>
+<p><font color='red' size=4>创建组合索引进行测试</p>
+</blockquote>
+<p><img src="https://img-blog.csdnimg.cn/20210716222430316.png" alt="在这里插入图片描述"></p>
+<h1 id="四-查看索引使用情况"><a href="#四-查看索引使用情况" class="headerlink" title="四. 查看索引使用情况"></a>四. 查看索引使用情况</h1><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">show</span> status <span class="keyword">like</span> <span class="string">&#x27;Handler_read%&#x27;</span>;	</span><br><span class="line"></span><br><span class="line"><span class="keyword">show</span> <span class="keyword">global</span> status <span class="keyword">like</span> <span class="string">&#x27;Handler_read%&#x27;</span>;	</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://img-blog.csdnimg.cn/20210716222451119.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTQ4MDc4NQ==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><img src="https://img-blog.csdnimg.cn/20210716222715876.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTQ4MDc4NQ==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">xizizzz</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://www.xizizzz.top/2021/09/08/MySQL-%E7%B4%A2%E5%BC%95%E7%9B%B8%E5%85%B3%E4%BC%98%E5%8C%96/">http://www.xizizzz.top/2021/09/08/MySQL-%E7%B4%A2%E5%BC%95%E7%9B%B8%E5%85%B3%E4%BC%98%E5%8C%96/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://www.xizizzz.top" target="_blank">xizizzz</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/MySQL/">MySQL</a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/Y960303802/image/img2/885936.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2021/09/01/Redis%E6%8C%81%E4%B9%85%E5%8C%96-AOF%E6%8C%81%E4%B9%85%E5%8C%96/"><img class="next-cover" src="https://cdn.jsdelivr.net/gh/Y960303802/image/img2/227944.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Redis持久化-AOF持久化</div></div></a></div></nav><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://cdn.jsdelivr.net/gh/xizizzz/image/av.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">xizizzz</div><div class="author-info__description">y960303802@163.com  2022届秋招后端开发求内推</div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">11</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">标签</div><div class="length-num">5</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">分类</div><div class="length-num">5</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xizizzz"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/xizizzz" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:y960303802@163.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="sticky_layout"><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2021/09/08/MySQL-%E7%B4%A2%E5%BC%95%E7%9B%B8%E5%85%B3%E4%BC%98%E5%8C%96/" title="MySQL-索引相关优化"><img src="https://cdn.jsdelivr.net/gh/Y960303802/image/img2/885936.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="MySQL-索引相关优化"/></a><div class="content"><a class="title" href="/2021/09/08/MySQL-%E7%B4%A2%E5%BC%95%E7%9B%B8%E5%85%B3%E4%BC%98%E5%8C%96/" title="MySQL-索引相关优化">MySQL-索引相关优化</a><time datetime="2021-09-08T07:43:44.000Z" title="发表于 2021-09-08 15:43:44">2021-09-08</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/09/01/Redis%E6%8C%81%E4%B9%85%E5%8C%96-AOF%E6%8C%81%E4%B9%85%E5%8C%96/" title="Redis持久化-AOF持久化"><img src="https://cdn.jsdelivr.net/gh/Y960303802/image/img2/227944.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis持久化-AOF持久化"/></a><div class="content"><a class="title" href="/2021/09/01/Redis%E6%8C%81%E4%B9%85%E5%8C%96-AOF%E6%8C%81%E4%B9%85%E5%8C%96/" title="Redis持久化-AOF持久化">Redis持久化-AOF持久化</a><time datetime="2021-09-01T04:43:44.000Z" title="发表于 2021-09-01 12:43:44">2021-09-01</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/09/01/Redis%E6%8C%81%E4%B9%85%E5%8C%96-RDB%20%E6%8C%81%E4%B9%85%E5%8C%96/" title="Redis持久化-RDB 持久化"><img src="https://cdn.jsdelivr.net/gh/Y960303802/image/img2/772493.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis持久化-RDB 持久化"/></a><div class="content"><a class="title" href="/2021/09/01/Redis%E6%8C%81%E4%B9%85%E5%8C%96-RDB%20%E6%8C%81%E4%B9%85%E5%8C%96/" title="Redis持久化-RDB 持久化">Redis持久化-RDB 持久化</a><time datetime="2021-09-01T04:43:44.000Z" title="发表于 2021-09-01 12:43:44">2021-09-01</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/08/29/G1%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8/" title="G1垃圾回收器"><img src="https://cdn.jsdelivr.net/gh/Y960303802/image/img2/891487.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="G1垃圾回收器"/></a><div class="content"><a class="title" href="/2021/08/29/G1%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8/" title="G1垃圾回收器">G1垃圾回收器</a><time datetime="2021-08-29T04:43:44.000Z" title="发表于 2021-08-29 12:43:44">2021-08-29</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/08/16/MySQL-Explain%E5%88%86%E6%9E%90%E6%89%A7%E8%A1%8C%E8%AE%A1%E5%88%92/" title="MySQL-Explain分析执行计划"><img src="https://cdn.jsdelivr.net/gh/Y960303802/image/img2/889639.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="MySQL-Explain分析执行计划"/></a><div class="content"><a class="title" href="/2021/08/16/MySQL-Explain%E5%88%86%E6%9E%90%E6%89%A7%E8%A1%8C%E8%AE%A1%E5%88%92/" title="MySQL-Explain分析执行计划">MySQL-Explain分析执行计划</a><time datetime="2021-08-16T02:43:44.000Z" title="发表于 2021-08-16 10:43:44">2021-08-16</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('https://cdn.jsdelivr.net/gh/Y960303802/image/img2/885936.png')"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2021 By xizizzz</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">Hi, welcome to my <a href="https://www.xizizzz.top">blog</a>!</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="font-plus" type="button" title="放大字体"><i class="fas fa-plus"></i></button><button id="font-minus" type="button" title="缩小字体"><i class="fas fa-minus"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><script>var preloader = {
+  endLoading: () => {
+    document.body.style.overflow = 'auto';
+    document.getElementById('loading-box').classList.add("loaded")
+  },
+  initLoading: () => {
+    document.body.style.overflow = '';
+    document.getElementById('loading-box').classList.remove("loaded")
+
+  }
+}
+window.addEventListener('load',preloader.endLoading())</script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: 'AUkuL0yLmqGEmdXq6iMz6LjN-gzGzoHsz',
+      appKey: '7A6RFzlX5mBGy9Gtj6WcUorg',
+      placeholder: '记得留下你的暱称和邮箱....可以快速收到回復',
+      avatar: 'monsterid',
+      meta: 'nick,mail,link'.split(','),
+      pageSize: '10',
+      lang: 'zh-CN',
+      recordIP: false,
+      serverURLs: '',
+      emojiCDN: '',
+      emojiMaps: "",
+      enableQQ: true,
+      path: window.location.pathname,
+      requiredFields: ["nick,mail"],
+      visitor: true
+    }, null))
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js').then(initValine)
+}
+
+if ('Valine' === 'Valine' || !false) {
+  if (false) btf.loadComment(document.getElementById('vcomment'),loadValine)
+  else setTimeout(loadValine, 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script></div><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/fireworks.min.js"></script><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="false" data-click="false"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
